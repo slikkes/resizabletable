@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <title>resizable table</title>
+</head>
+<body>
+<div id="dt-container">
+    <table id="datatable">
+        <thead>
+        <tr>
+            <th style="width: 30px;">id</th>
+            <th style="width: 120px;">first_name</th>
+            <th style="width: 120px;">last_name</th>
+            <th style="width: 330px;">email</th>
+            <th style="width: 270px;">ip_address</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const app = {
+        root: null,
+        resize: {
+            idx: {
+                left: null,
+                right: null,
+            },
+            startX: null,
+            startWidth: {
+                left: null,
+                right: null,
+            }
+        },
+        init() {
+            this.root = document.querySelector("#datatable");
+
+            this.createDragButtons()
+            this.createTBody()
+        },
+        createDragButtons() {
+            const ths = this.root.querySelectorAll("thead th")
+
+            // exist?
+
+            let totalWidth = 0;
+            for (const [i, th] of ths.entries()) {
+
+                const width = th.offsetWidth;
+                const key = `--res-th-${i}`
+
+                this.setColWidth(key, width)
+
+                th.style.removeProperty('width')
+                th.style.width = `var(${key})`
+                th.style.position = 'relative'
+
+                if (i < ths.length - 1) {
+                    const button = this.createResizeBtn(i)
+                    th.append(button)
+                }
+
+                totalWidth += width;
+            }
+            this.root.style.width = `${totalWidth}px`;
+        },
+        setColWidth(key, width) {
+            this.root.style.setProperty(key, `${width}px`)
+        },
+        createResizeBtn(idx) {
+            const btn = document.createElement("button")
+
+            btn.classList.add("resize-btn")
+            btn.dataset.idx = idx;
+            btn.draggable = true;
+            btn.ondragstart = ev => {
+                this.resize.idx.left = parseInt(ev.target.dataset.idx);
+                this.resize.idx.right = parseInt(ev.target.dataset.idx) + 1;
+                //maxidx?
+                this.resize.startX = ev.pageX;
+                this.resize.startWidth.left = ev.target.parentElement.offsetWidth;
+
+                const rightBtn = this.root.querySelectorAll('thead th')[this.resize.idx.right]
+                this.resize.startWidth.right = rightBtn.offsetWidth;
+            }
+            btn.ondrag = ev => {
+                if (ev.pageX === 0) {
+                    return;
+                }
+                const movement = ev.pageX - this.resize.startX
+                const newWidthL = this.resize.startWidth.left + movement;
+                const newWidthR = this.resize.startWidth.right - movement;
+                this.setColWidth(`--res-th-${this.resize.idx.left}`, newWidthL)
+                this.setColWidth(`--res-th-${this.resize.idx.right}`, newWidthR)
+
+
+            }
+            btn.ondragend = ev => {
+                this.resize = {
+                    idx: {
+                        left: null,
+                        right: null,
+                    },
+                    startX: null,
+                    startWidth: {
+                        left: null,
+                        right: null,
+                    }
+                }
+            }
+            return btn;
+        },
+        createTBody() {
+            const tbody = document.querySelector("#datatable tbody")
+            for (const item of this.data) {
+                const tr = document.createElement('tr')
+                for (const [key, value] of Object.entries(item)) {
+                    const td = document.createElement('td')
+                    td.innerText = value
+                    tr.append(td)
+                }
+                tbody.append(tr)
+            }
+        },
+        data: [
+            {
+                "id": 1,
+                "first_name": "Ronnie",
+                "last_name": "Oaks",
+                "email": "roaks0@theguardian.com",
+                "ip_address": "166.152.73.120",
+            },
+            {
+                "id": 2,
+                "first_name": "Scotti",
+                "last_name": "Lile",
+                "email": "slile1@w3.org",
+                "ip_address": "24.207.12.16",
+            },
+            {
+                "id": 3,
+                "first_name": "Genna",
+                "last_name": "Sexstone",
+                "email": "gsexstone2@mashable.com",
+                "ip_address": "74.247.146.79",
+            },
+            {
+                "id": 4,
+                "first_name": "Juliann",
+                "last_name": "McLewd",
+                "email": "jmclewd3@gnu.org",
+                "ip_address": "153.162.236.71",
+            },
+            {
+                "id": 5,
+                "first_name": "Bernie",
+                "last_name": "Ondrich",
+                "email": "bondrich4@upenn.edu",
+                "ip_address": "250.221.234.141",
+            }],
+
+    }
+
+    app.init()
+
+
+</script>
+<style>
+    body {
+        background-color: #0c5460;
+    }
+
+    #datatable {
+
+        border-collapse: collapse;
+    }
+
+    #datatable tbody td {
+        background-color: #00AAAA;
+
+        border: 1px solid black;
+        padding: 4px 6px;
+    }
+
+    #datatable thead th {
+        background-color: #018d8d;
+        border: 1px solid black;
+
+        font-weight: 700;
+        padding: 4px 6px;
+    }
+
+    #datatable .resize-btn {
+        padding: 2px 1px;
+        cursor: grab;
+        position: absolute;
+        right: -6px;
+        z-index: 3;
+        border: 0;
+        background-color: #018282;
+
+    }
+    #datatable .resize-btn:hover,
+    #datatable .resize-btn:active
+    {
+        background-color: #046767;
+
+    }
+
+    #datatable .resize-btn:after {
+        content: '::';
+    }
+
+    #datatable .resize-btn:active {
+        cursor: grabbing;
+    }
+
+    #dt-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-top: 70px;;
+    }
+</style>
+</body>
+</html>
