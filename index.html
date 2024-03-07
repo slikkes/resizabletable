@@ -37,9 +37,7 @@
         },
         init() {
             this.root = document.querySelector("#datatable");
-
             this.createDragButtons()
-            this.createTBody()
         },
         createDragButtons() {
             const ths = this.root.querySelectorAll("thead th")
@@ -95,8 +93,6 @@
                 const newWidthR = this.resize.startWidth.right - movement;
                 this.setColWidth(`--res-th-${this.resize.idx.left}`, newWidthL)
                 this.setColWidth(`--res-th-${this.resize.idx.right}`, newWidthR)
-
-
             }
             btn.ondragend = ev => {
                 this.resize = {
@@ -112,6 +108,24 @@
                 }
             }
             return btn;
+        },
+
+
+    }
+
+    const tableCreator = {
+        createTHead() {
+            const thead = document.querySelector("#datatable thead")
+            const tr = document.createElement('tr')
+            for (const key of Object.keys(this.data[0])) {
+                const th = document.createElement('th')
+                const div = document.createElement('div')
+                div.innerText = key
+                div.append(this.createResizeBtn())
+                th.append(div)
+                tr.append(th)
+            }
+            thead.append(tr)
         },
         createTBody() {
             const tbody = document.querySelector("#datatable tbody")
@@ -164,6 +178,7 @@
 
     }
 
+    tableCreator.createTBody()
     app.init()
 
 
@@ -183,6 +198,7 @@
 
         border: 1px solid black;
         padding: 4px 6px;
+        overflow: hidden;
     }
 
     #datatable thead th {
