@@ -3,6 +3,38 @@
 <head>
     <meta charset="utf-8">
     <title>resizable table</title>
+    <script src="./tableGenerator.js"></script>
+    <script src="./tableResizer.js"></script>
+
+
+    <style>
+        .syn-table {
+            border-collapse: collapse;
+            font-family: InterVariable, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+            text-align: left;
+            background-color: #00AAAA;
+            table-layout: fixed;
+        }
+
+        table.syn-table-bordered {
+            --tw-border-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-border-opacity));
+            border-width: 1px;
+        }
+
+        .syn-table td {
+            border: black solid 1px;
+        }
+
+        .syn-table thead td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tableFilter_form-group input {
+        }
+    </style>
+
 </head>
 <body>
 <div id="dt-container">
@@ -19,174 +51,12 @@
         <tbody>
         </tbody>
     </table>
+
+
 </div>
 
 <script>
-    const tableResizer = {
-        root: null,
-        resize: {
-            idx: {
-                left: null,
-                right: null,
-            },
-            startX: null,
-            startWidth: {
-                left: null,
-                right: null,
-            }
-        },
-        init() {
-            this.root = document.querySelector(".resizable-table");
-            this.createDragButtons()
-            this.addCSS()
-        },
-        createDragButtons() {
-            const ths = this.root.querySelectorAll("thead th")
 
-            // exist?
-
-            let totalWidth = 0;
-            for (const [i, th] of ths.entries()) {
-
-                const width = th.offsetWidth;
-                const key = `--res-th-${i}`
-
-                this._setColWidth(key, width)
-
-                th.style.removeProperty('width')
-                th.style.width = `var(${key})`
-                th.style.position = 'relative'
-
-                if (i < ths.length - 1) {
-                    const button = this._createResizeBtn(i)
-                    th.append(button)
-                }
-
-                totalWidth += width;
-            }
-            this.root.style.width = `${totalWidth}px`;
-        },
-        _setColWidth(key, width) {
-            this.root.style.setProperty(key, `${width}px`);
-        },
-        _createResizeBtn(idx) {
-            const btn = document.createElement("button");
-
-            btn.classList.add("resize-btn");
-            btn.dataset.idx = idx;
-            btn.draggable = true;
-            btn.ondragstart = ev => this._startResize(ev);
-            btn.ondrag = ev => this._handleDrag(ev);
-            btn.ondragend = () => this._resetResizer();
-            return btn;
-        },
-
-        _startResize(ev) {
-            this.resize.idx.left = parseInt(ev.target.dataset.idx);
-            this.resize.idx.right = parseInt(ev.target.dataset.idx) + 1;
-            //maxidx?
-            this.resize.startX = ev.pageX;
-            this.resize.startWidth.left = ev.target.parentElement.offsetWidth;
-
-            const rightBtn = this.root.querySelectorAll('thead th')[this.resize.idx.right]
-            this.resize.startWidth.right = rightBtn.offsetWidth;
-        },
-        _handleDrag(ev) {
-            if (ev.pageX === 0) {
-                return;
-            }
-            const movement = ev.pageX - this.resize.startX
-            const newWidthL = this.resize.startWidth.left + movement;
-            const newWidthR = this.resize.startWidth.right - movement;
-            this._setColWidth(`--res-th-${this.resize.idx.left}`, newWidthL)
-            this._setColWidth(`--res-th-${this.resize.idx.right}`, newWidthR)
-        },
-        _resetResizer() {
-            this.resize = {
-                idx: {
-                    left: null,
-                    right: null,
-                },
-                startX: null,
-                startWidth: {
-                    left: null,
-                    right: null,
-                }
-            }
-        },
-        addCSS() {
-            const css = `.resizable-table .resize-btn{padding:2px 1px;cursor:grab;position:absolute;right:-6px;z-index:3;border:0;background-color:#018282}.resizable-table .resize-btn:active,.resizable-table .resize-btn:hover{background-color:#046767}.resizable-table .resize-btn:after{content:'::'}.resizable-table .resize-btn:active{cursor:grabbing}`;
-
-            let style = document.createElement("style")
-            style.innerHTML = css;
-            document.head.append(style)
-        }
-    }
-
-    const tableCreator = {
-        createTHead() {
-            const thead = document.querySelector("#datatable thead")
-            const tr = document.createElement('tr')
-            for (const key of Object.keys(this.data[0])) {
-                const th = document.createElement('th')
-                const div = document.createElement('div')
-                div.innerText = key
-                div.append(this._createResizeBtn())
-                th.append(div)
-                tr.append(th)
-            }
-            thead.append(tr)
-        },
-        createTBody() {
-            const tbody = document.querySelector("#datatable tbody")
-            for (const item of this.data) {
-                const tr = document.createElement('tr')
-                for (const [key, value] of Object.entries(item)) {
-                    const td = document.createElement('td')
-                    td.innerText = value
-                    tr.append(td)
-                }
-                tbody.append(tr)
-            }
-        },
-        data: [
-            {
-                "id": 1,
-                "first_name": "Ronnie",
-                "last_name": "Oaks",
-                "email": "roaks0@theguardian.com",
-                "ip_address": "166.152.73.120",
-            },
-            {
-                "id": 2,
-                "first_name": "Scotti",
-                "last_name": "Lile",
-                "email": "slile1@w3.org",
-                "ip_address": "24.207.12.16",
-            },
-            {
-                "id": 3,
-                "first_name": "Genna",
-                "last_name": "Sexstone",
-                "email": "gsexstone2@mashable.com",
-                "ip_address": "74.247.146.79",
-            },
-            {
-                "id": 4,
-                "first_name": "Juliann",
-                "last_name": "McLewd",
-                "email": "jmclewd3@gnu.org",
-                "ip_address": "153.162.236.71",
-            },
-            {
-                "id": 5,
-                "first_name": "Bernie",
-                "last_name": "Ondrich",
-                "email": "bondrich4@upenn.edu",
-                "ip_address": "250.221.234.141",
-            }],
-
-    }
 
     tableCreator.createTBody()
     tableResizer.init()
@@ -224,33 +94,32 @@
         display: flex;
         justify-content: center;
         margin-top: 70px;;
+        height: calc(100vh - 124px);
     }
 
     // (\>=-=----=-==-=----=-==-=----=-==-=----=-=<[ BUTTON STYLE ]>=-=----=-==-=----=-==-=----=-==-=----=-=</)
 
     .resizable-table .resize-btn {
         padding: 2px 1px;
-        cursor: grab;
+        cursor: col-resize;
         position: absolute;
         right: -6px;
+        top: 6px;
         z-index: 3;
         border: 0;
-        background-color: #018282;
-
+        background-color: #018282
     }
 
-    .resizable-table .resize-btn:hover,
-    .resizable-table .resize-btn:active {
-        background-color: #046767;
-
+    .resizable-table .resize-btn:active, .resizable-table .resize-btn:hover {
+        background-color: #046767
     }
 
     .resizable-table .resize-btn:after {
-        content: '::';
+        content: '::'
     }
 
     .resizable-table .resize-btn:active {
-        cursor: grabbing;
+        cursor: col-resize
     }
 
 
